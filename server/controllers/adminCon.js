@@ -270,7 +270,7 @@ const getAdminContestDetail = async (req, res) => {
 const createContest = async (req, res) => {
     try {
         await connectDB();
-        const { title, description, duration, problemIds, rules, type, visibility, author, status } = req.body;
+        const { title, description, duration, problemIds, rules, author } = req.body;
 
         // duration is { start, end }
         const startTime = new Date(duration.start);
@@ -288,11 +288,10 @@ const createContest = async (req, res) => {
 
         const newContest = new Contest({
             title, description, startTime, endTime,
-            questions: problemIds, // Now just [String], matches schema
-            rules, // Now [String], matches schema
-            type, visibility,
-            joinId, // Save generated ID
-            author: author || "Admin" // Required field
+            questions: problemIds,
+            rules,
+            joinId,
+            author: author || "Admin"
         });
 
         await newContest.save();
