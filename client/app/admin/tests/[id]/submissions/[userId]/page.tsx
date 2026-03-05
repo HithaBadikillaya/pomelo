@@ -186,7 +186,7 @@ export default function SubmissionDetailPage() {
                 <div className="grid gap-6 md:grid-cols-3">
                     <StatItem icon={<User className="h-4 w-4" />} label="Candidate" value={data.userName} />
                     <StatItem icon={<Trophy className="h-4 w-4" />} label="Total Score" value={`${data.totalScore} / ${data.maxScore}`} />
-                    <StatItem icon={<Clock className="h-4 w-4" />} label="Submitted On" value={new Date(data.submittedAt).toLocaleString()} />
+                    <StatItem icon={<Clock className="h-4 w-4" />} label="Submitted On" value={format(new Date(data.submittedAt), "MMM d, yyyy, h:mm a")} />
                 </div>
 
                 {/* Submissions List */}

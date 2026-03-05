@@ -13,6 +13,7 @@ import { Clock, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Test } from "@/types/test";
 import { deleteTestAction } from "@/app/actions/delete-test";
+import { format } from "date-fns";
 
 export function TestCard({ test }: { test: Test }) {
   return (
@@ -45,10 +46,7 @@ export function TestCard({ test }: { test: Test }) {
           <Clock className="h-4 w-4 text-foreground shrink-0" />
           <span className="font-medium">Starts:</span>
           <span className="truncate">
-            {new Date(test.startsAt).toLocaleString(undefined, {
-              dateStyle: "medium",
-              timeStyle: "short",
-            })}
+            {format(new Date(test.startsAt), "MMM d, yyyy, h:mm a")}
           </span>
         </div>
 

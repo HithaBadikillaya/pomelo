@@ -3,7 +3,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, FileText, Calendar } from "lucide-react";
-import { Test } from "@/types/test";
+import { format } from "date-fns";
 
 interface TestInformationCardProps {
   test: Test;
@@ -42,7 +42,7 @@ export function TestInformationCard({ test }: TestInformationCardProps) {
           <div className="flex items-center gap-2 text-foreground">
             <Calendar className="h-4 w-4 text-primary/50" />
             <span className="font-semibold text-sm sm:text-base">
-              {new Date(test.startsAt).toLocaleString()}
+              {format(new Date(test.startsAt), "MMM d, yyyy, h:mm a")}
             </span>
           </div>
         </div>
