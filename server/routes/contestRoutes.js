@@ -1,5 +1,6 @@
 const express = require("express");
 const { requireAuth } = require("../middlewares/checkAuth");
+const isAdmin = require("../middlewares/isAdmin");
 
 const {
   validateJoinId,
@@ -7,7 +8,8 @@ const {
   startTest,
   getContestData,
   listAllContests,
-  endTest
+  endTest,
+  getLeaderboard
 } = require("../controllers/contestCon");
 
 const {
@@ -28,7 +30,12 @@ router.post('/join', validateJoinId);
 // List all (dev/debug)
 router.get('/list', listAllContests);
 
+// --- ADMIN ONLY ---
+// Leaderboard — ranked scores after contest ends, name only (no emails)
+router.get('/:id/leaderboard', requireAuth(), isAdmin, getLeaderboard);
+
 // Landing Page (Public test info) - Just needs to exist
+// NOTE: This must come AFTER specific :id/something routes
 router.get('/:id', validateContest(), getContestLanding);
 
 

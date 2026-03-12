@@ -39,7 +39,7 @@ app.use("/api/auth", authRoutes);
 
 app.use("/api/admin", adminRoutes);
 
-app.use("/api/contest", contestRoutes);
+app.use("/api/test", contestRoutes);
 
 const submitRoutes = require("./routes/submitRoutes");
 app.use("/api/submit", submitRoutes);

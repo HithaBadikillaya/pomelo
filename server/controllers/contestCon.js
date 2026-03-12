@@ -278,6 +278,68 @@ const listAllContests = async (req, res) => {
     }
 };
 
+// @desc    Get ranked leaderboard for a contest
+// @route   GET /api/contest/:id/leaderboard
+// @access  Private (Admin only)
+const getLeaderboard = async (req, res) => {
+    try {
+        const contest = await Contest.findById(req.params.id);
+        if (!contest) {
+            return res.status(404).json({ success: false, message: 'Contest not found' });
+        }
+
+        const now = new Date();
+        const isEnded =
+            now > new Date(contest.endTime) ||
+            ['completed', 'ended'].includes((contest.status || '').toLowerCase());
+
+        if (!isEnded) {
+            return res.status(403).json({
+                success: false,
+                message: 'Leaderboard is not available until the contest ends.'
+            });
+        }
+
+        const Submission = require('../models/Submissions');
+
+        // Include both Completed and Ongoing submissions — participants whose time
+        // expired without clicking "End Test" still have valid scores.
+        const submissions = await Submission.find({ contest: contest._id })
+            .populate('user', 'name') // name only — no email for privacy
+            .lean();
+
+        // Sort: highest totalScore first; ties broken by earliest submittedAt
+        // (Ongoing entries won't have submittedAt, so push them to the bottom of ties)
+        submissions.sort((a, b) => {
+            if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+            const aTime = a.submittedAt ? new Date(a.submittedAt).getTime() : Infinity;
+            const bTime = b.submittedAt ? new Date(b.submittedAt).getTime() : Infinity;
+            return aTime - bTime;
+        });
+
+        const leaderboard = submissions.map((sub, idx) => ({
+            rank: idx + 1,
+            name: sub.user ? sub.user.name || 'Anonymous' : 'Anonymous',
+            totalScore: sub.totalScore ?? 0,
+            submittedAt: sub.submittedAt || null,
+            status: sub.status  // 'Completed' | 'Ongoing' (time expired)
+        }));
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                contestId: contest._id,
+                title: contest.title,
+                endTime: contest.endTime,
+                totalParticipants: leaderboard.length,
+                leaderboard
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // @desc    End Test (Mark as Completed)
 const endTest = async (req, res) => {
     try {
@@ -323,5 +385,6 @@ module.exports = {
     getTestQuestions,
     listAllContests,
     startTest,
-    endTest
+    endTest,
+    getLeaderboard
 };
