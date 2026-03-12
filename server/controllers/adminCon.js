@@ -310,6 +310,48 @@ const createContest = async (req, res) => {
     }
 };
 
+// @desc Clone an existing contest
+const cloneContest = async (req, res) => {
+    try {
+        await connectDB();
+        const { id } = req.params;
+
+        const originalContest = await Contest.findById(id);
+        if (!originalContest) {
+            return res.status(404).json({ success: false, error: 'Original contest not found' });
+        }
+
+        // Generate Unique 6-digit Join ID
+        let joinId;
+        let isUnique = false;
+        while (!isUnique) {
+            joinId = Math.floor(100000 + Math.random() * 900000).toString();
+            const existing = await Contest.findOne({ joinId });
+            if (!existing) isUnique = true;
+        }
+
+        const now = new Date();
+        const startTime = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
+        const endTime = new Date(now.getTime() + 48 * 60 * 60 * 1000);   // 48 hours from now
+
+        const newContest = new Contest({
+            title: `Copy of ${originalContest.title}`,
+            description: originalContest.description,
+            startTime,
+            endTime,
+            questions: originalContest.questions,
+            rules: originalContest.rules,
+            joinId,
+            author: originalContest.author || "Admin"
+        });
+
+        await newContest.save();
+        res.status(200).json({ success: true, contestId: newContest._id, joinId: newContest.joinId });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 // @desc Update an existing contest
 const updateContest = async (req, res) => {
     try {
@@ -637,6 +679,7 @@ module.exports = {
     getAdminContests,
     getAdminContestDetail,
     createContest,
+    cloneContest,
     updateContest,
     getAdminContestResults,
     deleteQuestion,

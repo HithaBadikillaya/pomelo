@@ -10,6 +10,7 @@ const {
   getAdminContests,
   getAdminContestDetail,
   createContest,
+  cloneContest,
   updateContest,
   getAdminContestResults,
   deleteContest,
@@ -45,6 +46,7 @@ router.delete("/questions/:id", requireAuth(), isAdmin, deleteQuestion);
 router.get("/tests", requireAuth(), isAdmin, getAdminContests);
 router.get("/tests/:id", requireAuth(), isAdmin, getAdminContestDetail);
 router.post("/tests/create", requireAuth(), isAdmin, createContest);
+router.post("/tests/:id/clone", requireAuth(), isAdmin, cloneContest);
 router.put("/tests/:id/edit", requireAuth(), isAdmin, updateContest);
 router.delete("/tests/:id", requireAuth(), isAdmin, deleteContest);
 router.get("/tests/:id/result", requireAuth(), isAdmin, getAdminContestResults);
