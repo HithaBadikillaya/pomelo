@@ -6,7 +6,7 @@ x-logging: &default-logging
 
 services:
   judge0-server:
-    image: judge0/judge0:1.13.1
+    image: mrkushalsm/judge0:latest
     ports:
       - "2358:2358"
     volumes:
@@ -24,7 +24,7 @@ services:
       - judge0-redis
 
   judge0-workers:
-    image: judge0/judge0:1.13.1
+    image: mrkushalsm/judge0:latest
     command: ["./scripts/workers"]
     volumes:
       - ./config/judge0/judge0.conf:/judge0.conf:ro

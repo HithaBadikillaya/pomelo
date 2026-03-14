@@ -22,6 +22,7 @@ export default function QuestionCard({
   onClickQuestion,
   className,
   hideActions = false,
+  selected = false,
 }: Props) {
   const getTypeIcon = (type: string | undefined) => {
     return type === "coding" || type === "Coding" ? (
@@ -57,6 +58,7 @@ export default function QuestionCard({
     <div
       className={cn(
         "group flex items-center justify-between p-4 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors cursor-pointer",
+        selected && "border-primary bg-primary/5 ring-1 ring-primary",
         className
       )}
       onClick={handleClick}

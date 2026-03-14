@@ -1,6 +1,10 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { cloneTestAction } from "@/app/actions/clone-test";
 import {
   ArrowLeft,
   Edit,
@@ -8,6 +12,8 @@ import {
   CheckCircle,
   XCircle,
   Play,
+  Copy,
+  Loader2,
 } from "lucide-react";
 import { Test } from "@/types/test";
 
@@ -24,6 +30,22 @@ export function TestDetailHeader({ test }: TestDetailHeaderProps) {
         return "bg-primary/70 text-primary-foreground";
       default:
         return "bg-muted text-muted-foreground";
+    }
+  };
+
+  const router = useRouter();
+  const [isCloning, setIsCloning] = useState(false);
+
+  const handleClone = async () => {
+    if (confirm("Are you sure you want to duplicate this test?")) {
+      setIsCloning(true);
+      const res = await cloneTestAction(test.id as string);
+      setIsCloning(false);
+      if (res.success && res.newTestId) {
+        router.push(`/admin/tests/${res.newTestId}/edit`);
+      } else {
+        alert(res.message);
+      }
     }
   };
 
@@ -92,20 +114,42 @@ export function TestDetailHeader({ test }: TestDetailHeaderProps) {
 
         <div className="flex flex-col sm:flex-row gap-3">
           {test.status === "waiting" ? (
-            <Link href={`/admin/tests/${test.id}/edit`}>
-              <Button className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg transition-colors w-full sm:w-auto">
+            <>
+              <Button 
+                onClick={handleClone}
+                disabled={isCloning}
+                variant="outline"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors w-full sm:w-auto text-muted-foreground hover:text-foreground"
+              >
+                {isCloning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Copy className="h-4 w-4" />}
+                Clone
+              </Button>
+              <Link href={`/admin/tests/${test.id}/edit`}>
+                <Button className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg transition-colors w-full sm:w-auto">
+                  <Edit className="h-4 w-4" />
+                  Edit Test
+                </Button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Button 
+                onClick={handleClone}
+                disabled={isCloning}
+                variant="outline"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors w-full sm:w-auto text-muted-foreground hover:text-foreground"
+              >
+                {isCloning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Copy className="h-4 w-4" />}
+                Clone
+              </Button>
+              <Button
+                disabled
+                className="flex items-center gap-2 bg-muted text-muted-foreground px-4 py-2 rounded-lg cursor-not-allowed w-full sm:w-auto"
+              >
                 <Edit className="h-4 w-4" />
                 Edit Test
               </Button>
-            </Link>
-          ) : (
-            <Button
-              disabled
-              className="flex items-center gap-2 bg-muted text-muted-foreground px-4 py-2 rounded-lg cursor-not-allowed w-full sm:w-auto"
-            >
-              <Edit className="h-4 w-4" />
-              Edit Test
-            </Button>
+            </>
           )}
           <Link href={`/admin/tests/${test.id}/result`}>
             <Button className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground px-4 py-2 rounded-lg transition-colors w-full sm:w-auto">

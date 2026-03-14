@@ -1,5 +1,9 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { cloneTestAction } from "@/app/actions/clone-test";
 import {
   Card,
   CardContent,
@@ -8,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, BarChart3, Play } from "lucide-react";
+import { Edit, BarChart3, Play, Copy, Loader2 } from "lucide-react";
 import { Test } from "@/types/test";
 
 interface QuickActionsCardProps {
@@ -17,6 +21,21 @@ interface QuickActionsCardProps {
 
 export function QuickActionsCard({ test }: QuickActionsCardProps) {
   const { id: testId, status } = test;
+  const router = useRouter();
+  const [isCloning, setIsCloning] = useState(false);
+
+  const handleClone = async () => {
+    if (confirm("Are you sure you want to duplicate this test?")) {
+      setIsCloning(true);
+      const res = await cloneTestAction(testId as string);
+      setIsCloning(false);
+      if (res.success && res.newTestId) {
+        router.push(`/admin/tests/${res.newTestId}/edit`);
+      } else {
+        alert(res.message);
+      }
+    }
+  };
 
   return (
     <Card className="bg-card border-border shadow-md">
@@ -27,7 +46,17 @@ export function QuickActionsCard({ test }: QuickActionsCardProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Button 
+            onClick={handleClone}
+            disabled={isCloning}
+            variant="outline"
+            className="w-full h-16 flex flex-col items-center justify-center gap-2"
+          >
+            {isCloning ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : <Copy className="h-5 w-5 text-muted-foreground" />}
+            <span className="text-xs font-medium text-center text-muted-foreground">Clone</span>
+          </Button>
+
           {status === "waiting" ? (
             <Link href={`/admin/tests/${testId}/edit`}>
               <Button className="w-full h-16 flex flex-col items-center justify-center gap-2">

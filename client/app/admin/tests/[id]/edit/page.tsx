@@ -69,7 +69,7 @@ export default async function AdminTestEditPage({
       id: testDataRaw._id,
       startsAt: testDataRaw.startTime ? new Date(testDataRaw.startTime).toISOString() : '',
       duration: durationStr,
-      problems: testDataRaw.questions || [],
+      problems: (testDataRaw.questions || []).map((q: any) => typeof q === 'string' ? q : (q._id || q.id || String(q))),
       rules: testDataRaw.rules || [],
       status: (testDataRaw.status || "waiting") as "waiting" | "ongoing" | "completed",
       totalQuestions: testDataRaw.questions?.length || 0,

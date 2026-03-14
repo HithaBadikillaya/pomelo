@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -9,13 +11,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Trash2 } from "lucide-react";
+import { Clock, Trash2, Copy, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Test } from "@/types/test";
 import { deleteTestAction } from "@/app/actions/delete-test";
+import { cloneTestAction } from "@/app/actions/clone-test";
 import { format } from "date-fns";
 
 export function TestCard({ test }: { test: Test }) {
+  const router = useRouter();
+  const [isCloning, setIsCloning] = useState(false);
+
   return (
     <Card className="shadow-md bg-card border-border">
       <CardHeader>
@@ -130,6 +136,30 @@ export function TestCard({ test }: { test: Test }) {
                   : "Waiting"}
             </Button>
           </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted shrink-0"
+            disabled={isCloning}
+            title="Clone Test"
+            onClick={async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (confirm("Are you sure you want to duplicate this test?")) {
+                setIsCloning(true);
+                const res = await cloneTestAction(test.id as string);
+                setIsCloning(false);
+                if (res.success && res.newTestId) {
+                  router.push(`/admin/tests/${res.newTestId}/edit`);
+                } else {
+                  alert(res.message);
+                }
+              }
+            }}
+          >
+            {isCloning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Copy className="h-4 w-4" />}
+          </Button>
 
           <Button
             variant="ghost"
