@@ -672,6 +672,31 @@ const importQuestions = async (req, res) => {
     }
 };
 
+// @desc Get detailed submission data for a single student attempt
+// NOTE: the route param is named :submissionId but the frontend actually passes a userId
+const getAdminSubmissionDetail = async (req, res) => {
+    try {
+        await connectDB();
+        const { contestId, submissionId: userId } = req.params;
+
+        const submission = await Submission.findOne({
+            user: userId,
+            contest: contestId
+        })
+            .populate('user', 'name email')
+            .populate('submissions.question', 'title marks questionType difficulty testcases')
+            .lean();
+
+        if (!submission) {
+            return res.status(404).json({ success: false, error: 'Submission not found' });
+        }
+
+        res.status(200).json({ success: true, submission });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 module.exports = {
     createProblem,
     updateProblem,
@@ -685,6 +710,7 @@ module.exports = {
     deleteQuestion,
     deleteContest,
     getAdminStats,
-    importQuestions
+    importQuestions,
+    getAdminSubmissionDetail
 };
 
