@@ -97,7 +97,7 @@ const executeTestCases = async ({ question, code, language, testCases, judge0Id 
 };
 
 // @desc    Run code against visible test cases only
-const runCode = async (req, res) => {
+const runCode = async (req, res, next) => {
     try {
         const { questionId, code, language } = req.body;
         if (!questionId || !code || !language) {
@@ -130,13 +130,12 @@ const runCode = async (req, res) => {
             totalCount: results.length
         });
     } catch (error) {
-        console.error("Error in runCode:", error);
-        return res.status(500).json({ success: false, error: error.message });
+        next(error);
     }
 };
 
 // @desc    Submit code and save results
-const submitCode = async (req, res) => {
+const submitCode = async (req, res, next) => {
     try {
         const { contestId, questionId, code, language } = req.body;
         const userId = req.user.id || req.user._id || req.user.sub;
@@ -205,13 +204,12 @@ const submitCode = async (req, res) => {
             overallStatus
         });
     } catch (error) {
-        console.error("Error in submitCode:", error);
-        return res.status(500).json({ error: "Internal server error" });
+        next(error);
     }
 };
 
 // Save MCQ answer
-const saveMCQ = async (req, res) => {
+const saveMCQ = async (req, res, next) => {
     try {
         const { contestId, questionId, answer } = req.body;
         const userId = req.user.id || req.user._id || req.user.sub;
@@ -261,7 +259,7 @@ const saveMCQ = async (req, res) => {
 
         return res.status(200).json({ success: true, score });
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
