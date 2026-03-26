@@ -427,6 +427,94 @@ const getAdminContestResults = async (req, res, next) => {
     }
 };
 
+// @desc Export contest results to CSV
+const exportContestResults = async (req, res, next) => {
+    try {
+        await connectDB();
+        const { id } = req.params;
+
+        const contest = await Contest.findById(id).lean();
+        if (!contest) {
+            return res.status(404).json({ success: false, error: 'Contest not found' });
+        }
+
+        const questions = await Question.find({ _id: { $in: contest.questions || [] } }).select('title _id').lean();
+        const questionMap = {};
+        questions.forEach(q => questionMap[q._id.toString()] = q.title);
+
+        const orderedQuestions = (contest.questions || []).map(qId => ({
+            _id: qId.toString(),
+            title: questionMap[qId.toString()] || 'Unknown Question'
+        }));
+
+        const submissions = await Submission.find({ contest: id, status: 'Completed' })
+            .populate('user', 'name email')
+            .populate('submissions.question', 'title')
+            .sort({ totalScore: -1 })
+            .lean();
+
+        // Build CSV Header
+        const headers = ['Rank', 'User Name', 'Email'];
+        
+        // Add columns for each question
+        const questionHeaders = orderedQuestions.map((q, idx) => `Q${idx + 1}: ${q.title}`);
+        headers.push(...questionHeaders);
+        
+        headers.push('Total Score');
+        headers.push('Submitted At');
+
+        const escapeCSV = (val) => {
+            if (val === null || val === undefined) return '';
+            const str = String(val);
+            if (str.includes(',') || str.includes('"') || str.includes('\\n')) {
+                return '"' + str.replace(/"/g, '""') + '"';
+            }
+            return str;
+        };
+
+        const rows = [];
+        rows.push(headers.map(escapeCSV).join(','));
+
+        let rank = 1;
+        submissions.forEach(sub => {
+            const userName = sub.user ? sub.user.name : 'Unknown';
+            const email = sub.user ? sub.user.email : 'Unknown';
+            const totalScore = sub.totalScore || 0;
+            const submittedAt = sub.submittedAt ? new Date(sub.submittedAt).toISOString() : (sub.updatedAt ? new Date(sub.updatedAt).toISOString() : '');
+
+            const rowData = [rank, userName, email];
+
+            const scoreMap = {};
+            if (sub.submissions && Array.isArray(sub.submissions)) {
+                sub.submissions.forEach(sq => {
+                    const qId = sq.question && sq.question._id ? sq.question._id.toString() : null;
+                    if (qId) {
+                        scoreMap[qId] = sq.score || 0;
+                    }
+                });
+            }
+
+            orderedQuestions.forEach(q => {
+                rowData.push(scoreMap[q._id] !== undefined ? scoreMap[q._id] : 0);
+            });
+
+            rowData.push(totalScore);
+            rowData.push(submittedAt);
+
+            rows.push(rowData.map(escapeCSV).join(','));
+            rank++;
+        });
+
+        const csvContent = rows.join('\\n');
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="contest_results.csv"`);
+        return res.status(200).send(csvContent);
+    } catch (error) {
+        next(error);
+    }
+};
+
 // @desc Delete a contest
 const deleteContest = async (req, res, next) => {
     try {
@@ -710,6 +798,7 @@ module.exports = {
     deleteContest,
     getAdminStats,
     importQuestions,
-    getAdminSubmissionDetail
+    getAdminSubmissionDetail,
+    exportContestResults
 };
 
