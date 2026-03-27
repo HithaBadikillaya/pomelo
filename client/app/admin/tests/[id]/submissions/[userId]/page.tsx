@@ -264,7 +264,7 @@ export default async function SubmissionDetailPage({
                 </div>
 
                 <div className="space-y-8">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground">
                             Questions & Responses
                         </h2>
@@ -291,7 +291,7 @@ export default async function SubmissionDetailPage({
                                                 Points Earned: <span className="font-mono font-medium text-foreground">{detail.earnedPoints}</span> / {detail.points}
                                             </CardDescription>
                                         </div>
-                                        <Badge variant={getSubmissionStatusVariant(detail.status)} className="w-fit">
+                                        <Badge variant={getSubmissionStatusVariant(detail.status)} className="w-fit shrink-0 self-start">
                                             {detail.status}
                                         </Badge>
                                     </CardHeader>
@@ -421,14 +421,14 @@ export default async function SubmissionDetailPage({
 
 function StatItem({ icon, label, value, mono = true }: { icon: React.ReactNode; label: string; value: string; mono?: boolean }) {
     return (
-        <Card className="border-border bg-card shadow-sm">
-            <CardContent className="flex items-center gap-4 pt-6">
-                <div className="rounded-xl border border-border bg-muted/30 p-3 text-muted-foreground">
+        <Card className="h-full border-border bg-card shadow-sm">
+            <CardContent className="flex min-h-24 h-full items-center gap-3 px-5 py-">
+                <div className="shrink-0 rounded-xl border border-border bg-muted/30 p-2.5 text-muted-foreground">
                     {icon}
                 </div>
-                <div>
+                <div className="min-w-0">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
-                    <p className={mono ? "font-mono text-lg font-bold text-foreground" : "text-lg font-semibold text-foreground"}>{value}</p>
+                    <p className={mono ? "break-words font-mono text-lg font-bold text-foreground" : "break-words text-lg font-semibold text-foreground"}>{value}</p>
                 </div>
             </CardContent>
         </Card>
