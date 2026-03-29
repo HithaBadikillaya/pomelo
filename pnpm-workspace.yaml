@@ -6,3 +6,7 @@ packages:
 onlyBuiltDependencies:
   - sharp
   - unrs-resolver
+
+overrides:
+  dompurify@<3.3.2: '>=3.3.2'
+  path-to-regexp@<8.4.0: '>=8.4.0'

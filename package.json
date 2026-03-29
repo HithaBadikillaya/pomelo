@@ -2,7 +2,7 @@
   "name": "pomelo",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@10.26.1",
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "start": "turbo run start",
     "dev": "pnpm --filter @pomelo/code-gen build && turbo run dev",
@@ -12,9 +12,9 @@
     "clean": "turbo run clean"
   },
   "devDependencies": {
-    "ts-node": "^10.9.1",
-    "turbo": "^2.7.3",
-    "typescript": "^5.0.0"
+    "ts-node": "^10.9.2",
+    "turbo": "^2.8.20",
+    "typescript": "^6.0.2"
   },
   "engines": {
     "npm": "Use pnpm",
