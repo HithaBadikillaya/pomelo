@@ -12,7 +12,10 @@ export const testSchema = z.object({
   description: z.string().min(1, "Description is required"),
   duration: z
     .string()
-    .regex(/^(0?[1-9]|1[0-2]):[0-5]\d\s?(AM|PM)$/i, "Duration must be in HH:MM AM/PM format"),
+    .regex(
+      /^(0?[1-9]|1[0-2]):[0-5]\d\s?(AM|PM)$/i,
+      "End time must be in HH:MM AM/PM format",
+    ),
   startsAt: z.iso.datetime(),
   problems: z.array(z.string()),
   rules: z.array(z.string()).default([]),
