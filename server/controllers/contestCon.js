@@ -345,6 +345,7 @@ const endTest = async (req, res, next) => {
         console.log("EndTest: Initiated");
         const contestId = req.params.id || req.body.contestId || (req.contest && req.contest._id);
         const userId = req.user.id || req.user._id || req.user.sub;
+        const { forcedSubmission = false, autoSubmitReason } = req.body || {};
         console.log("EndTest: Contest ID:", contestId, "User ID:", userId);
 
         if (!contestId) {
@@ -363,11 +364,14 @@ const endTest = async (req, res, next) => {
         console.log("EndTest: Marking submission as completed");
         submission.status = 'Completed';
         submission.submittedAt = new Date();
+        submission.forcedSubmission = Boolean(forcedSubmission || autoSubmitReason);
+        submission.autoSubmitReason = submission.forcedSubmission ? autoSubmitReason || 'VIOLATION_LIMIT_REACHED' : undefined;
         await submission.save();
 
         return res.json({
             success: true,
-            message: 'Test completed successfully'
+            message: 'Test completed successfully',
+            forcedSubmission: submission.forcedSubmission
         });
     } catch (error) {
         next(error);

@@ -20,6 +20,14 @@ const submissionSchema = new mongoose.Schema({
     enum: ['Ongoing', 'Completed'],
     default: 'Ongoing',
   },
+  forcedSubmission: {
+    type: Boolean,
+    default: false,
+  },
+  autoSubmitReason: {
+    type: String,
+    trim: true,
+  },
   submittedAt: Date,
   totalScore: {
     type: Number,
