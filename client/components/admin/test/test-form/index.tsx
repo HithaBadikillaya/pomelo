@@ -17,14 +17,43 @@ import { saveTest } from "@/app/actions/save-test";
 
 import { Problem } from "@/types/problem";
 
+function formatTimeForDisplay(date: Date) {
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const period = hours >= 12 ? "PM" : "AM";
+  const normalizedHours = hours % 12 || 12;
+
+  return `${String(normalizedHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${period}`;
+}
+
+function getDefaultSchedule() {
+  const start = new Date(Date.now() + 10 * 60 * 1000);
+  const remainder = start.getMinutes() % 15;
+
+  if (remainder !== 0) {
+    start.setMinutes(start.getMinutes() + (15 - remainder), 0, 0);
+  } else {
+    start.setSeconds(0, 0);
+  }
+
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+
+  return {
+    startsAt: start.toISOString(),
+    duration: formatTimeForDisplay(end),
+  };
+}
+
 export default function TestForm({ testData, availableQuestions = [] }: { testData: Test | null; availableQuestions?: Problem[] }) {
   const router = useRouter();
+  const defaultSchedule = getDefaultSchedule();
   const form = useForm<TestSchema>({
     resolver: zodResolver(testSchema) as Resolver<TestSchema>,
     defaultValues: {
       title: "",
       description: "",
-      duration: "12:00 AM",
+      startsAt: defaultSchedule.startsAt,
+      duration: defaultSchedule.duration,
       status: "waiting",
       problems: [],
       rules: [],

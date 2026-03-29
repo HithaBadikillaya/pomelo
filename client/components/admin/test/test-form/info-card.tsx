@@ -62,24 +62,6 @@ function parseTimeInput(value: string) {
   return { hours: normalizedHours, minutes };
 }
 
-function formatDurationForDisplay(value: string | undefined) {
-  if (!value) {
-    return "12:00 AM";
-  }
-
-  const parsedMeridiem = parseTimeInput(value);
-  if (parsedMeridiem) {
-    return formatTimeForDisplay(parsedMeridiem.hours, parsedMeridiem.minutes);
-  }
-
-  const match24Hour = value.trim().match(/^(\d{2}):(\d{2})(?::\d{2})?$/);
-  if (!match24Hour) {
-    return value;
-  }
-
-  return formatTimeForDisplay(Number(match24Hour[1]), Number(match24Hour[2]));
-}
-
 function normalizeTimeInput(value: string) {
   return value.replace(/\b(am|pm)\b/gi, (match) => match.toUpperCase());
 }
@@ -163,13 +145,13 @@ export default function TestBasicCard() {
             name="duration"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Duration (HH:MM AM/PM)</FormLabel>
+                <FormLabel>Ends At (HH:MM AM/PM)</FormLabel>
                 <FormControl>
                   <Input
                     type="text"
-                    value={formatDurationForDisplay(field.value)}
+                    value={field.value || ""}
                     onChange={(e) => field.onChange(normalizeTimeInput(e.target.value))}
-                    placeholder="hh:mm AM"
+                    placeholder="01:30 PM"
                     className="w-fit bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
                   />
                 </FormControl>
@@ -196,6 +178,11 @@ export default function TestBasicCard() {
                     mode="single"
                     selected={date}
                     captionLayout="dropdown"
+                    disabled={(day) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return day < today;
+                    }}
                     onSelect={(d) => {
                       setDate(d);
                       setOpen(false);

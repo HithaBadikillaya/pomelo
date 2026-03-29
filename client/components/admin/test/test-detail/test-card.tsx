@@ -4,6 +4,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, FileText, Calendar } from "lucide-react";
 import { format } from "date-fns";
+import { Test } from "@/types/test";
 
 interface TestInformationCardProps {
   test: Test;
