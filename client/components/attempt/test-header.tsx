@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BadgeCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, usePathname, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { toast } from "sonner";
+import { useTestCompletion } from "./use-test-completion";
 
 type ProblemMeta = {
   id: string;
@@ -21,8 +21,8 @@ export default function TestHeader({ problems }: TestHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams();
-  const [isFinishing, setIsFinishing] = React.useState(false);
   const { data: session } = useSession();
+  const { completeTest, isSubmitting } = useTestCompletion();
 
   // Handle BFCache (Back/Forward Cache)
   // If user presses back button after finishing, force a refresh to trigger server-side checks
@@ -64,27 +64,7 @@ export default function TestHeader({ problems }: TestHeaderProps) {
     if (!session?.backendToken || !params.testid) return;
     if (!confirm("Are you sure you want to finish the test? You cannot change your answers after this.")) return;
 
-    setIsFinishing(true);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/test/${params.testid}/end`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${session.backendToken}`,
-          "Content-Type": "application/json"
-        }
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Test submitted successfully!");
-        router.push(`/test/${params.testid}`);
-      } else {
-        toast.error(data.error || "Failed to submit test");
-      }
-    } catch {
-      toast.error("Network error finishing test");
-    } finally {
-      setIsFinishing(false);
-    }
+    await completeTest({ replace: false });
   };
 
   const currentId = pathname.split("/").pop();
@@ -181,10 +161,10 @@ export default function TestHeader({ problems }: TestHeaderProps) {
         variant={"secondary"}
         className="text-sm mx-4 bg-green-600 hover:bg-green-700 text-white border-none"
         onClick={handleFinish}
-        disabled={isFinishing}
+        disabled={isSubmitting}
       >
-        {isFinishing ? "Finishing..." : "Submit"}
-        {!isFinishing && <BadgeCheck className="h-4 w-4 ml-2" />}
+        {isSubmitting ? "Finishing..." : "Submit"}
+        {!isSubmitting && <BadgeCheck className="h-4 w-4 ml-2" />}
       </Button>
     </div>
   );
