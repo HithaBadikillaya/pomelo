@@ -4,6 +4,25 @@ import { testSchema, TestSchema } from "@/types/test";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 
+function parseDuration(duration: string) {
+  const meridiemMatch = duration.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (meridiemMatch) {
+    const hours = Number(meridiemMatch[1]);
+    const minutes = Number(meridiemMatch[2]);
+    const period = meridiemMatch[3].toUpperCase();
+
+    let normalizedHours = hours % 12;
+    if (period === "PM") {
+      normalizedHours += 12;
+    }
+
+    return { hours: normalizedHours, minutes, seconds: 0 };
+  }
+
+  const [hours, minutes, seconds = 0] = duration.split(":").map(Number);
+  return { hours: hours || 0, minutes: minutes || 0, seconds: seconds || 0 };
+}
+
 export async function saveTest(_prevState: Record<string, unknown>, data: TestSchema) {
   try {
     const validatedData = testSchema.parse(data);
@@ -12,9 +31,8 @@ export async function saveTest(_prevState: Record<string, unknown>, data: TestSc
 
     console.log("Saving test:", validatedData);
 
-    // Parse duration (HH:MM:SS) to milliseconds
-    const [h, m, s] = String(validatedData.duration).split(':').map(Number);
-    const durationMs = ((h || 0) * 3600 + (m || 0) * 60 + (s || 0)) * 1000;
+    const { hours, minutes, seconds } = parseDuration(String(validatedData.duration));
+    const durationMs = (hours * 3600 + minutes * 60 + seconds) * 1000;
 
     const payload = {
       title: validatedData.title,

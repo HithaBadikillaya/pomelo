@@ -24,7 +24,7 @@ export default function TestForm({ testData, availableQuestions = [] }: { testDa
     defaultValues: {
       title: "",
       description: "",
-      duration: "00:00:00",
+      duration: "12:00 AM",
       status: "waiting",
       problems: [],
       rules: [],
