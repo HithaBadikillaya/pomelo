@@ -234,8 +234,8 @@ export default async function SubmissionDetailPage({
     };
 
     return (
-        <div className="flex-1 overflow-y-auto bg-background">
-            <div className="container mx-auto space-y-8 p-6 pb-16 lg:p-10">
+        <div className="flex-1 overflow-auto bg-background h-full">
+            <div className="max-w-none w-full p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 pb-16">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="flex items-start gap-4">
                         <Button variant="outline" size="icon" className="mt-1 shrink-0" asChild>
