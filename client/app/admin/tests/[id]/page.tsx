@@ -40,6 +40,17 @@ export default async function AdminTestDetailPage({
       const h = Math.floor(totalSeconds / 3600);
       const m = Math.floor((totalSeconds % 3600) / 60);
 
+      // Dynamic stats 
+      const now = new Date();
+      let computedStatus: "waiting" | "ongoing" | "completed" = "waiting";
+      
+      const manualStatus = ((data.status as string) || "").toLowerCase();
+      if (manualStatus === "completed" || manualStatus === "ended" || now > end) {
+        computedStatus = "completed";
+      } else if (now >= start && now <= end) {
+        computedStatus = "ongoing";
+      }
+
       test = {
         id: data._id as string,
         title: data.title as string,
@@ -50,7 +61,7 @@ export default async function AdminTestDetailPage({
           ...q,
           id: (q?._id as string) ?? (q?.id as string),
         })),
-        status: data.status as "waiting" | "ongoing" | "completed",
+        status: computedStatus,
         participantsInProgress: inProgress,
         participantsCompleted: completed,
         totalQuestions: (data.questions as unknown[])?.length || 0,
