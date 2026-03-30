@@ -14,13 +14,13 @@ import { Button } from "@/components/ui/button";
 import { Clock, Trash2, Copy, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Test } from "@/types/test";
-import { deleteTestAction } from "@/app/actions/delete-test";
 import { cloneTestAction } from "@/app/actions/clone-test";
 import { format } from "date-fns";
 
 export function TestCard({ test }: { test: Test }) {
   const router = useRouter();
   const [isCloning, setIsCloning] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   return (
     <Card className="shadow-md bg-card border-border">
@@ -165,20 +165,42 @@ export function TestCard({ test }: { test: Test }) {
             variant="ghost"
             size="icon"
             className="text-destructive hover:text-destructive/90 hover:bg-destructive/10 shrink-0"
-            disabled={test.status === "ongoing"}
+            disabled={test.status === "ongoing" || isDeleting}
             title={test.status === "ongoing" ? "Cannot delete active test" : "Delete Test"}
             onClick={async (e) => {
               e.preventDefault();
               e.stopPropagation();
               if (confirm("Are you sure you want to delete this test?")) {
-                const res = await deleteTestAction(test.id as string);
-                if (!res.success) {
-                  alert(res.message);
+                setIsDeleting(true);
+
+                try {
+                  const response = await fetch(`/api/admin/tests/${test.id}`, {
+                    method: "DELETE",
+                  });
+                  const json = await response.json();
+
+                  if (!response.ok || !json.success) {
+                    throw new Error(json.error || "Failed to delete test");
+                  }
+
+                  router.refresh();
+                } catch (error) {
+                  alert(
+                    error instanceof Error
+                      ? error.message
+                      : "Failed to delete test",
+                  );
+                } finally {
+                  setIsDeleting(false);
                 }
               }
             }}
           >
-            <Trash2 className="h-4 w-4" />
+            {isDeleting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </CardContent>

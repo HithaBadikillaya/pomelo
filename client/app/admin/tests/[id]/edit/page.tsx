@@ -3,6 +3,15 @@ import TestForm from "@/components/admin/test/test-form";
 import { db } from "@/lib/db";
 import { Problem } from "@/types/problem";
 
+function formatTimeForDisplay(date: Date) {
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const period = hours >= 12 ? "PM" : "AM";
+  const normalizedHours = hours % 12 || 12;
+
+  return `${String(normalizedHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${period}`;
+}
+
 interface IdParams {
   id: string;
 }
@@ -13,12 +22,19 @@ interface MongoTest {
   description: string;
   startTime: string;
   endTime: string;
-  questions?: unknown[];
+  questions?: QuestionReference[];
   rules?: string[];
   status?: string;
   joinId?: string;
   createdAt?: string;
 }
+
+type QuestionReference =
+  | string
+  | {
+      _id?: string;
+      id?: string;
+    };
 
 export default async function AdminTestEditPage({
   params,
@@ -34,7 +50,6 @@ export default async function AdminTestEditPage({
     console.error("Failed to fetch questions", e);
   }
 
-  // Handle "new" - Render empty form for creation
   if (id === "new") {
     return (
       <div className="flex-1 h-full bg-background text-foreground overflow-x-hidden">
@@ -53,22 +68,16 @@ export default async function AdminTestEditPage({
   }
 
   let testData = null;
-  // Ensure compatibility with TestForm
   if (testDataRaw) {
-    // Map if necessary, e.g. startsAt handling
-    const start = new Date(testDataRaw.startTime).getTime();
-    const end = new Date(testDataRaw.endTime).getTime();
-    const diffMs = end - start;
-    const hours = Math.floor(diffMs / 3600000);
-    const minutes = Math.floor((diffMs % 3600000) / 60000);
-    const durationStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    const end = new Date(testDataRaw.endTime);
+    const endTimeStr = formatTimeForDisplay(end);
 
     testData = {
       ...testDataRaw,
       id: testDataRaw._id,
       startsAt: testDataRaw.startTime ? new Date(testDataRaw.startTime).toISOString() : '',
-      duration: durationStr,
-      problems: (testDataRaw.questions || []).map((q: any) => typeof q === 'string' ? q : (q._id || q.id || String(q))),
+      duration: endTimeStr,
+      problems: (testDataRaw.questions || []).map((q) => typeof q === 'string' ? q : (q._id || q.id || String(q))),
       rules: testDataRaw.rules || [],
       status: (testDataRaw.status || "waiting") as "waiting" | "ongoing" | "completed",
       totalQuestions: testDataRaw.questions?.length || 0,

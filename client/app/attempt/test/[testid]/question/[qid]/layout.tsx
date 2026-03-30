@@ -1,4 +1,5 @@
 import TestHeader from "@/components/attempt/test-header";
+import IntegrityMonitor from "@/components/attempt/integrity-monitor";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import React from "react";
@@ -41,6 +42,7 @@ export default async function TestLayout({
 
   return (
     <main className="w-screen h-screen pt-12">
+      <IntegrityMonitor />
       <TestHeader problems={problemMeta} />
       {children}
     </main>

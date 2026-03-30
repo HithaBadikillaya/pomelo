@@ -29,13 +29,15 @@ import {
 } from "@/components/ui/form";
 import { useEffect, useState } from "react";
 
-function formatTimeForInput(date: Date) {
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
+function formatTimeForDisplay(hours: number, minutes: number) {
   const period = hours >= 12 ? "PM" : "AM";
   const normalizedHours = hours % 12 || 12;
 
   return `${String(normalizedHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${period}`;
+}
+
+function formatTimeForInput(date: Date) {
+  return formatTimeForDisplay(date.getHours(), date.getMinutes());
 }
 
 function parseTimeInput(value: string) {
@@ -58,6 +60,10 @@ function parseTimeInput(value: string) {
   }
 
   return { hours: normalizedHours, minutes };
+}
+
+function normalizeTimeInput(value: string) {
+  return value.replace(/\b(am|pm)\b/gi, (match) => match.toUpperCase());
 }
 
 export default function TestBasicCard() {
@@ -139,13 +145,14 @@ export default function TestBasicCard() {
             name="duration"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Duration (HH:MM)</FormLabel>
+                <FormLabel>Ends At (HH:MM AM/PM)</FormLabel>
                 <FormControl>
                   <Input
-                    type="time"
-                    step="60"
+                    type="text"
+                    value={field.value || ""}
+                    onChange={(e) => field.onChange(normalizeTimeInput(e.target.value))}
+                    placeholder="01:30 PM"
                     className="w-fit bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
-                    {...field}
                   />
                 </FormControl>
                 <FormMessage />
@@ -171,6 +178,11 @@ export default function TestBasicCard() {
                     mode="single"
                     selected={date}
                     captionLayout="dropdown"
+                    disabled={(day) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return day < today;
+                    }}
                     onSelect={(d) => {
                       setDate(d);
                       setOpen(false);
@@ -181,7 +193,7 @@ export default function TestBasicCard() {
               <Input
                 type="text"
                 value={time}
-                onChange={(e) => setTime(e.target.value)}
+                onChange={(e) => setTime(normalizeTimeInput(e.target.value))}
                 placeholder="hh:mm AM"
                 className="w-fit bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
               />

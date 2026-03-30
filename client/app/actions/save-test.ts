@@ -4,6 +4,32 @@ import { testSchema, TestSchema } from "@/types/test";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 
+function parseDuration(duration: string) {
+  const match = duration.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) {
+    throw new Error("End time must be in HH:MM AM/PM format");
+  }
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const period = match[3].toUpperCase();
+
+  if (hours < 1 || hours > 12 || minutes < 0 || minutes > 59) {
+    throw new Error("End time must be in HH:MM AM/PM format");
+  }
+
+  let normalizedHours = hours % 12;
+  if (period === "PM") {
+    normalizedHours += 12;
+  }
+
+  return {
+    hours: normalizedHours,
+    minutes,
+    seconds: 0,
+  };
+}
+
 export async function saveTest(_prevState: Record<string, unknown>, data: TestSchema) {
   try {
     const validatedData = testSchema.parse(data);
@@ -12,16 +38,29 @@ export async function saveTest(_prevState: Record<string, unknown>, data: TestSc
 
     console.log("Saving test:", validatedData);
 
-    // Parse duration (HH:MM:SS) to milliseconds
-    const [h, m, s] = String(validatedData.duration).split(':').map(Number);
-    const durationMs = ((h || 0) * 3600 + (m || 0) * 60 + (s || 0)) * 1000;
+    const { hours, minutes, seconds } = parseDuration(String(validatedData.duration));
+    const startDate = new Date(validatedData.startsAt);
+    const now = new Date();
+    const bufferMs = 5 * 60 * 1000;
+
+    if (startDate.getTime() < now.getTime() - bufferMs) {
+      throw new Error("Start time cannot be in the past");
+    }
+
+    const endDate = new Date(startDate);
+
+    endDate.setHours(hours, minutes, seconds, 0);
+
+    if (endDate <= startDate) {
+      endDate.setDate(endDate.getDate() + 1);
+    }
 
     const payload = {
       title: validatedData.title,
       description: validatedData.description,
       duration: {
         start: validatedData.startsAt,
-        end: new Date(new Date(validatedData.startsAt).getTime() + durationMs).toISOString()
+        end: endDate.toISOString()
       },
       problemIds: validatedData.problems,
       rules: validatedData.rules,
