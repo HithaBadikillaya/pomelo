@@ -14,6 +14,7 @@ import { ArrowLeft, Save } from "lucide-react";
 import { useActionState, useTransition, useEffect } from "react";
 import TestQuestions from "../questions-list";
 import { saveTest } from "@/app/actions/save-test";
+import { toast } from "sonner";
 
 import { Problem } from "@/types/problem";
 
@@ -70,9 +71,12 @@ export default function TestForm({ testData, availableQuestions = [] }: { testDa
 
   useEffect(() => {
     if (state.success) {
+      toast.success(state.message || "Test saved successfully");
       router.push("/admin/tests");
+    } else if (state.message && !state.success) {
+      toast.error(state.message);
     }
-  }, [state.success, router]);
+  }, [state.success, state.message, router]);
 
   const handleSubmit = form.handleSubmit((data) => {
     startTransition(() => {
