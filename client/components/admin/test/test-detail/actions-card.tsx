@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, BarChart3, Play, Copy, Loader2 } from "lucide-react";
+import { Edit, BarChart3, Play, Copy, Loader2, Trophy } from "lucide-react";
 import { Test } from "@/types/test";
 
 interface QuickActionsCardProps {
@@ -87,6 +87,31 @@ export function QuickActionsCard({ test }: QuickActionsCardProps) {
               </span>
             </Button>
           </Link>
+
+          {status === "completed" ? (
+            <Link href={`/admin/tests/${testId}/leaderboard`}>
+              <Button
+                className="w-full h-16 flex flex-col items-center justify-center gap-2"
+                variant={"outline"}
+              >
+                <Trophy className="h-5 w-5" />
+                <span className="text-xs font-medium text-center">
+                  Leaderboard
+                </span>
+              </Button>
+            </Link>
+          ) : (
+            <Button
+              className="w-full h-16 flex flex-col items-center justify-center gap-2 opacity-60 cursor-not-allowed"
+              variant={"outline"}
+              title="Leaderboard is available after the test ends"
+            >
+              <Trophy className="h-5 w-5" />
+              <span className="text-xs font-medium text-center">
+                Leaderboard
+              </span>
+            </Button>
+          )}
 
           <Link href={`/test/${testId}`}>
             <Button className="w-full h-16 flex flex-col items-center justify-center gap-2">

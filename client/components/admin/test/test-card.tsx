@@ -128,13 +128,21 @@ export function TestCard({ test }: { test: Test }) {
           )}
 
           <div className="flex-1">
-            <Button className={`w-full text-sm font-medium shadow-md pointer-events-none`}>
-              {test.status === "completed"
-                ? "Completed"
-                : test.status === "ongoing"
-                  ? "Active"
-                  : "Waiting"}
-            </Button>
+            {test.status === "completed" ? (
+              <Link href={`/admin/tests/${test.id}/leaderboard`}>
+                <Button variant="outline" className="w-full text-sm border-primary/20 hover:bg-primary/5 text-primary font-semibold">
+                  Leaderboard
+                </Button>
+              </Link>
+            ) : (
+              <Button 
+                variant="outline" 
+                className="w-full text-sm opacity-50 cursor-not-allowed border-border"
+                title="Leaderboard is available after the test ends"
+              >
+                Leaderboard
+              </Button>
+            )}
           </div>
 
           <Button
